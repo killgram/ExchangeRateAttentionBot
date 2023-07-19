@@ -1,10 +1,15 @@
 import { BotInstance } from "../configuration";
 import { ReplyEnum } from "../enums";
+import { getStaticImg } from "../utils";
 
 const startController = async () => {
-  BotInstance.start((ctx) => {
-    console.log(ctx.message.from.language_code);
-    ctx.reply(ReplyEnum.START);
+  BotInstance.start(async (ctx) => {
+    await ctx.replyWithPhoto(
+      {
+        source: getStaticImg(2),
+      },
+      { caption: ReplyEnum.START },
+    );
   });
 };
 

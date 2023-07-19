@@ -1,42 +1,32 @@
 import { BotInstance } from "../configuration";
-import { Markup } from "telegraf";
+import { connectUserService } from "../services";
+import { ReplyEnum } from "../enums";
+import { getStaticImg } from "../utils";
 
-const installTgUidController = async () => {
-  // BotInstance.on("message", async (ctx) => {
-  //   // console.log(ctx.state);
-  // });
-
-  BotInstance.on("message", async (ctx) => {
-    // console.log(ctx.message?.location);
-    // ctx.replyWithLocation()
-    // ctx.telegram.sendLocation(chat id , latitude, longitude)
-    // ctx.reply(
-    //   "Special buttons keyboard",
-    //   Markup.keyboard([
-    //     Markup.button.locationRequest("Send location"),
-    //   ]).resize(),
-    // );
-
-    const option: any = {
-      parse_mode: "Markdown",
-      reply_markup: {
-        one_time_keyboard: true,
-        keyboard: [
-          [
+const installTgUidController = async (): Promise<void> => {
+  BotInstance.on("text", async (ctx) => {
+    const imei: string = ctx.message.text;
+    const tgUid: number = ctx.message.chat.id;
+    if (imei.length > 0 && tgUid) {
+      try {
+        const result = await connectUserService(imei, tgUid);
+        if (result) {
+          await ctx.replyWithPhoto(
             {
-              text: "My location",
-              request_location: true,
+              source: getStaticImg(1),
             },
-          ],
-          ["Cancel"],
-        ],
-      },
-    };
-
-    ctx.sendMessage("How can we contact you?", option).then((r) => {
-      // handle user phone
-      console.log(r);
-    });
+            { caption: ReplyEnum.SUCCESS_CONNECTION },
+          );
+        }
+      } catch (e) {
+        await ctx.replyWithPhoto(
+          {
+            source: getStaticImg(0),
+          },
+          { caption: ReplyEnum.ERROR_CONNECTION },
+        );
+      }
+    }
   });
 };
 
